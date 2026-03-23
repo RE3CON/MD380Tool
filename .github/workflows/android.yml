@@ -1,0 +1,74 @@
+name: Build and Release Android APK
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        
+      - name: Build Debug APK
+        run: |
+          cd app
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          
+      - name: Build Release APK
+        run: |
+          cd app
+          chmod +x gradlew
+          ./gradlew assembleRelease
+          
+      - name: Rename APKs
+        run: |
+          mv app/build/outputs/apk/debug/*.apk MD380Tool-debug.apk
+          mv app/build/outputs/apk/release/*.apk MD380Tool-release.apk
+          ls -la *.apk
+          
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            MD380Tool-debug.apk
+            MD380Tool-release.apk
+          body: |
+            ## MD380Tool Android App v2026.03.23
+
+            ### What's New
+            - ✅ Updated for Android 16 compatibility
+            - ✅ Target SDK 34 (Android 14)
+            - ✅ Min SDK 24 (Android 7.0)
+            - ✅ USB Host support for MD380 radios
+            - ✅ Debug and Release builds
+
+            ### Supported Radios
+            - Tytera MD-380 / MD-380G
+            - Tytera MD-390 / MD-390G
+            - Retevis RT3 / RT8
+
+            ### Installation
+            1. Enable "Install from unknown sources" in settings
+            2. Download and install the APK
+            3. Connect your radio via USB OTG
+
+            ### Source Code
+            Built from: https://github.com/travisgoodspeed/MD380Tool
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
