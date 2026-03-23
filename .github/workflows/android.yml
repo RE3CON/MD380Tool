@@ -3,15 +3,11 @@ name: Build Android APK
 on:
   push:
     branches: [main]
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     
     defaults:
       run:
@@ -33,48 +29,17 @@ jobs:
       - name: Build Debug APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon
 
       - name: Build Release APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
-
-      - name: List output files
-        run: find . -name "*.apk" -type f
+          ./gradlew assembleRelease --no-daemon
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
           name: md380tool-apks
           path: |
-            app/build/outputs/apk/debug/**/*.apk
-            app/build/outputs/apk/release/**/*.apk
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-    
-    steps:
-      - name: Download APKs
-        uses: actions/download-artifact@v4
-        with:
-          name: md380tool-apks
-          
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            *.apk
-          body: |
-            ## MD380Tool Android App
-            
-            ### Downloads
-            - app-debug.apk - Debug build
-            - app-release.apk - Release build
-          draft: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/release/app-release.apk
