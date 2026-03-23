@@ -1,0 +1,121 @@
+name: Build Firmware
+
+on:
+  workflow_dispatch:
+    inputs:
+      firmware_version:
+        description: 'Firmware Version (e.g., D13, S13)'
+        required: true
+        default: 'D13'
+      radio_model:
+        description: 'Radio Model'
+        required: true
+        default: 'MD380'
+        type: choice
+        options:
+          - MD380
+          - MD380G
+          - MD390
+          - MD390G
+          - RT3
+          - RT8
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04
+    
+    steps:
+      - name: Checkout md380tools
+        uses: actions/checkout@v4
+        with:
+          repository: travisgoodspeed/md380tools
+          path: md380tools
+          sparse-checkout: |
+            Makefile
+            firmware
+            patches
+            tools
+            scripts
+
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            gcc-arm-none-eabi \
+            libnewlib-arm-none-eabi \
+            git \
+            python3 \
+            curl \
+            wget
+
+      - name: Download Factory Firmware
+        run: |
+          mkdir -p md380tools/firmware
+          # Download appropriate firmware based on radio model
+          case "${{ github.event.inputs.radio_model }}" in
+            MD380)
+              curl -L -o md380tools/firmware/firmware.bin \
+                "https://github.com/travisgoodspeed/md380tools/raw/main/firmware/D02.032.bin"
+              ;;
+            MD380G)
+              curl -L -o md380tools/firmware/firmware.bin \
+                "https://github.com/travisgoodspeed/md380tools/raw/main/firmware/S13.018.bin"
+              ;;
+          esac
+
+      - name: Build Firmware
+        working-directory: md380tools
+        run: |
+          make clean || true
+          make patch-${{ github.event.inputs.firmware_version }}
+          make
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: fw-${{ github.event.inputs.firmware_version }}-${{ github.event.inputs.radio_model }}
+          name: "Firmware ${{ github.event.inputs.firmware_version }} for ${{ github.event.inputs.radio_model }}"
+          draft: true
+          files: |
+            md380tools/*.bin
+            md380tools/*.hex
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-nightly:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout md380tools
+        uses: actions/checkout@v4
+        with:
+          repository: travisgoodspeed/md380tools
+          path: md380tools
+
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            gcc-arm-none-eabi \
+            libnewlib-arm-none-eabi \
+            git \
+            python3
+
+      - name: Build All Firmware Variants
+        working-directory: md380tools
+        run: |
+          make clean
+          make dist
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-binaries
+          path: |
+            md380tools/*.bin
+            md380tools/*.hex
