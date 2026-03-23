@@ -7,24 +7,36 @@ android {
     defaultConfig {
         applicationId "com.travisgoodspeed.md380tool"
         minSdk 24  // Android 7.0+
-        targetSdk 34  // Android 14 (compatible with 16)
-        versionCode 3
-        versionName "2026.03.23"
+        targetSdk 34  // Android 14
+        versionCode 4
+        versionName "1.0.2"
         
         // Enable USB host support
-        features += ["android.hardware.usb.host"]
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
     }
     
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Use debug signing for test build
             signingConfig signingConfigs.debug
         }
         debug {
             debuggable true
             signingConfig signingConfigs.debug
+        }
+    }
+    
+    // Build for specific ABIs
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            universalApk true
         }
     }
     

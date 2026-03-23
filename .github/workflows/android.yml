@@ -1,4 +1,4 @@
-name: Build and Release Android APK
+name: Build and Release
 
 on:
   push:
@@ -7,8 +7,11 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
     
     steps:
@@ -24,37 +27,100 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         
-      - name: Build Debug APK
+      - name: Build Debug APK (ARM64)
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug -Pabi=arm64-v8a
+        env:
+          ANDROID_NDK_ABI: arm64-v8a
           
-      - name: Build Release APK
+      - name: Build Debug APK (ARM32)
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug -Pabi=armeabi-v7a
+        env:
+          ANDROID_NDK_ABI: armeabi-v7a
+          
+      - name: Build Release APK (ARM64)
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease
           
-      - name: Rename APKs
-        run: |
-          mv app/build/outputs/apk/debug/*.apk MD380Tool-debug.apk 2>/dev/null || true
-          mv app/build/outputs/apk/release/*.apk MD380Tool-release.apk 2>/dev/null || true
-          ls -la *.apk 2>/dev/null || ls -la app/build/outputs/apk/*/*.apk
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: |
+            app/build/outputs/apk/debug/*/app-debug.apk
+            app/build/outputs/apk/release/*/app-release.apk
+
+  build-webapp:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
           
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build
+          
+      - name: Upload Web App
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp
+          path: out/
+
+  release:
+    needs: [build-android, build-webapp]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download Android APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apks
+          
+      - name: Download Web App
+        uses: actions/download-artifact@v4
+        with:
+          name: webapp
+          path: webapp/
+          
+      - name: List files
+        run: |
+          ls -la
+          ls -la webapp/
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            MD380Tool-debug.apk
-            MD380Tool-release.apk
+            *.apk
+            webapp/**/*
           body: |
-            ## MD380Tool Android App v2026.03.23
+            ## MD380Tool v1.0.2 - Full Release
+
+            ### Android Apps (APK)
+            - `app-release.apk` - Release build (signed)
+            - `app-debug.apk` - Debug build
+
+            ### Web App
+            - Deploy the `webapp/` folder to any static host
+            - Or use GitHub Pages
 
             ### What's New
             - ✅ Updated for Android 16 compatibility
-            - ✅ Target SDK 34 (Android 14)
-            - ✅ Min SDK 24 (Android 7.0)
+            - ✅ Target SDK 34
+            - ✅ Separate 64-bit (arm64-v8a) and 32-bit (armeabi-v7a) builds
             - ✅ USB Host support for MD380 radios
-            - ✅ Debug and Release builds
+            - ✅ Full web interface included
 
             ### Supported Radios
             - Tytera MD-380 / MD-380G
@@ -62,11 +128,8 @@ jobs:
             - Retevis RT3 / RT8
 
             ### Installation
-            1. Enable "Install from unknown sources" in settings
+            1. Enable "Install from unknown sources"
             2. Download and install the APK
-            3. Connect your radio via USB OTG
-
-            ### Source Code
-            Built from: https://github.com/travisgoodspeed/MD380Tool
+            3. Connect radio via USB OTG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
