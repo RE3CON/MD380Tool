@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tytera MD380 USB Device Filter -->
+    <usb-device vendor-id="1155" product-id="57105" />
+    <!-- 1155 = 0x0483 (STMicroelectronics) -->
+    <!-- 57105 = 0xDF11 (MD380 DFU) -->
+</resources>

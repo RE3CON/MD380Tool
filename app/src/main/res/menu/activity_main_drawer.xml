@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Connection">
+        <menu>
+        <item
+            android:id="@+id/nav_manage"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Connect" />
+        <item
+            android:id="@+id/nav_upgrade"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Upgrade Firmware" />
+        </menu>
+    </item>
+
+
+    <item android:title="Codeplug">
+        <menu>
+            <item
+                android:id="@+id/nav_codeplug"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Codeplug Up/Download" />
+
+            <item
+                android:visible="false"
+                android:id="@+id/nav_codeplugclone"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Codeplug Clone" />
+            <item
+                android:visible="false"
+                android:id="@+id/nav_contacts"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Contacts" />
+            <item
+                android:visible="false"
+                android:id="@+id/nav_rxgroups"
+                android:icon="@drawable/ic_menu_send"
+                android:title="RX Groups" />
+            <item
+                android:visible="false"
+                android:id="@+id/nav_channels"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Channels" />
+            <item
+                android:visible="false"
+                android:id="@+id/nav_zones"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Zones" />
+            <item
+                android:visible="false"
+                android:id="@+id/nav_scanlists"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Scan Lists" />
+            <item
+                android:visible="false"
+                android:id="@+id/nav_messages"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="Quick Texts" />
+
+        </menu>
+    </item>
+
+    <item android:title="Logs">
+        <menu>
+
+        <item
+            android:id="@+id/nav_dmesg"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Dmesg Log" />
+        </menu>
+    </item>
+<!--
+    <item android:title="DMR MARC">
+        <menu>
+            <item
+                android:id="@+id/nav_marcusers"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="User DB" />
+            <item
+                android:id="@+id/nav_marcrepeaters"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="Repeater DB" />
+        </menu>
+    </item>
+-->
+
+</menu>

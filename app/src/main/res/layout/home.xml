@@ -1,0 +1,44 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="layout.HomeFragment">
+
+    <Button
+        android:id="@+id/check"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connect to MD380"
+        android:layout_gravity="center_horizontal|bottom" />
+    <TextView
+        android:id="@+id/info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:layout_gravity="center_horizontal|top"
+        android:text="
+\nWelcome to MD380Tool, a friendly little Android frontend to the
+firmware patches by KK4VCZ, DD4CR, and friends.
+
+\n\nTo use this tool, you will need a recent Android phone with USB
+Host Mode support, a USB OTG adapter, and the programming
+cable that came with your MD380.
+
+\n\nThis tool works on both VHF and UHF models of the MD380, as well
+as the Retevis R3.  Don't try it with the MD280 or MD446 unless
+you are very brave.
+
+\n\nBegin by Clicking the 'Connect' button below.  You might also
+need to upgrade your firmware to include our patches.
+
+\n\nThe menu on the left contains various tools for working with
+the patched firmware.
+
+\n\nHave fun!
+\n--Travis KK4VCZ
+
+" />
+
+
+
+</FrameLayout>
