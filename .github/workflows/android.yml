@@ -11,7 +11,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build-arm64:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,73 +30,55 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         
-      - name: Build ARM64 Debug
+      - name: Build Debug APK
         run: |
           chmod +x gradlew
-          ./gradlew clean assembleDebug --no-daemon -PABI=arm64-v8a
+          ./gradlew assembleDebug --no-daemon
 
-      - name: Upload ARM64 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: apk-arm64-debug
-          path: android/app/build/outputs/apk/debug/*/app-debug.apk
-
-  build-arm32:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: android
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        
-      - name: Build ARM32 Debug
-        run: |
-          chmod +x gradlew
-          ./gradlew clean assembleDebug --no-daemon -PABI=armeabi-v7a
-
-      - name: Upload ARM32 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: apk-arm32-debug
-          path: android/app/build/outputs/apk/debug/*/app-debug.apk
-
-  build-release:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: android
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        
-      - name: Build Release
+      - name: Build Release APK
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
-      - name: Upload Release APK
+      - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: apk-release
-          path: android/app/build/outputs/apk/release/*/app-release.apk
+          name: md380tool-apks
+          path: |
+            android/app/build/outputs/apk/debug/*/app-debug.apk
+            android/app/build/outputs/apk/release/*/app-release.apk
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Download APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: md380tool-apks
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *.apk
+          body: |
+            ## MD380Tool Android App
+            
+            ### Downloads
+            - app-debug.apk - Debug build
+            - app-release.apk - Release build
+            
+            ### Supported Devices
+            - ARM64-v8a (64-bit)
+            - ARMv7a (32-bit)
+            
+            ### Features
+            - USB Host for MD380 radios
+            - Codeplug editing
+            - Firmware flashing
+            - DMR database updates
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
