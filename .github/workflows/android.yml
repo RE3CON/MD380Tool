@@ -13,6 +13,9 @@ env:
 jobs:
   build-arm64:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
     
     steps:
       - name: Checkout
@@ -36,10 +39,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk-arm64-debug
-          path: app/build/outputs/apk/debug/*/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*/app-debug.apk
 
   build-arm32:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
     
     steps:
       - name: Checkout
@@ -63,10 +69,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk-arm32-debug
-          path: app/build/outputs/apk/debug/*/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*/app-debug.apk
 
   build-release:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
     
     steps:
       - name: Checkout
@@ -90,4 +99,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk-release
-          path: app/build/outputs/apk/release/*/app-release.apk
+          path: android/app/build/outputs/apk/release/*/app-release.apk
