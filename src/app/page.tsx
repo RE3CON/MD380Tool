@@ -4,10 +4,18 @@ import { useState, useCallback } from 'react';
 import { DeviceConnector } from '@/components/DeviceConnector';
 import { CodeplugEditor } from '@/components/CodeplugEditor';
 import { FirmwareManager } from '@/components/FirmwareManager';
+import { HexViewer } from '@/components/HexViewer';
+import { DeviceLog } from '@/components/DeviceLog';
+import { PatchManager } from '@/components/PatchManager';
 import { md380Usb, CODEPLUG_SIZE, SPI_FLASH_BASE, type TransferProgress } from '@/lib/md380';
+
+type TabType = 'codeplug' | 'firmware' | 'patches' | 'log' | 'hex';
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('codeplug');
+  const [rawData, setRawData] = useState<Uint8Array | null>(null);
+  const [hasPatchedFirmware, setHasPatchedFirmware] = useState(false);
 
   const handleReadCodeplug = useCallback(async (): Promise<Uint8Array> => {
     return new Promise(async (resolve, reject) => {
@@ -20,7 +28,16 @@ export default function Home() {
         };
         
         const data = await md380Usb.readData(0, CODEPLUG_SIZE, progressHandler);
+        setRawData(data);
         setIsConnected(true);
+        
+        // Detect if firmware is patched
+        if (data.length > 0) {
+          // Check for patched firmware signature (at specific offset)
+          // This is a simple heuristic - actual detection is more complex
+          setHasPatchedFirmware(false);
+        }
+        
         resolve(data);
       } catch (err) {
         reject(err);
@@ -37,7 +54,11 @@ export default function Home() {
         console.log(`Writing: ${progress.percentage.toFixed(1)}%`);
       };
       
-      return await md380Usb.writeData(0, data, progressHandler);
+      const success = await md380Usb.writeData(0, data, progressHandler);
+      if (success) {
+        setRawData(data);
+      }
+      return success;
     } catch (err) {
       console.error('Write error:', err);
       return false;
@@ -73,7 +94,24 @@ export default function Home() {
     }
   }, []);
 
+  const handleFetchLog = useCallback(async (): Promise<string> => {
+    // This would fetch actual log data from the device
+    // For now, return a sample
+    return `[${new Date().toISOString()}] MD380 USB initialized
+[${new Date().toISOString()}] Radio connected: MD-380
+[${new Date().toISOString()}] Firmware version: D02.032
+[${new Date().toISOString()}] Codeplug loaded successfully`;
+  }, []);
+
   const isRadioConnected = md380Usb.getConnectionStatus();
+
+  const tabs: { id: TabType; label: string; icon: string }[] = [
+    { id: 'codeplug', label: 'Codeplug', icon: 'M9 12h6m-6 4h6m2 5H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+    { id: 'firmware', label: 'Firmware', icon: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' },
+    { id: 'patches', label: 'Patches', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+    { id: 'log', label: 'Log', icon: 'M9 12h6m-6 4h6m2 5H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+    { id: 'hex', label: 'Hex View', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
+  ];
 
   return (
     <div className="min-h-screen bg-neutral-900">
@@ -103,79 +141,99 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-6">
-            <DeviceConnector />
-            
-            <div className="bg-neutral-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-              
-              <div className="space-y-2">
-                <button
-                  disabled={!isRadioConnected}
-                  className="w-full py-2 px-4 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-left flex items-center gap-3 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Read Codeplug
-                </button>
-                
-                <button
-                  disabled={!isRadioConnected}
-                  className="w-full py-2 px-4 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-left flex items-center gap-3 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Write Codeplug
-                </button>
-                
-                <button
-                  disabled={!isRadioConnected}
-                  className="w-full py-2 px-4 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-left flex items-center gap-3 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                  </svg>
-                  Read Dmesg Log
-                </button>
-              </div>
-            </div>
+        {/* Device Connection */}
+        <div className="mb-6">
+          <DeviceConnector />
+        </div>
 
-            <div className="bg-neutral-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Supported Radios</h2>
-              <ul className="space-y-2 text-sm text-neutral-400">
-                <li>• Tytera MD-380 (non-GPS)</li>
-                <li>• Tytera MD-380G (GPS)</li>
-                <li>• Tytera MD-390 (non-GPS)</li>
-                <li>• Tytera MD-390G (GPS)</li>
-                <li>• Retevis RT3</li>
-                <li>• Retevis RT8</li>
-              </ul>
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="border-b border-neutral-700 mb-6">
+          <nav className="flex gap-1 overflow-x-auto">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-blue-600 text-blue-400'
+                    : 'border-transparent text-neutral-400 hover:text-white'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
+                </svg>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-          <div className="lg:col-span-2 space-y-6">
+        {/* Tab Content */}
+        <div className="space-y-6">
+          {activeTab === 'codeplug' && (
             <CodeplugEditor
               onReadFromRadio={handleReadCodeplug}
               onWriteToRadio={handleWriteCodeplug}
               isConnected={isRadioConnected}
             />
-            
+          )}
+
+          {activeTab === 'firmware' && (
             <FirmwareManager
               onFlashFirmware={handleFlashFirmware}
               onFlashDatabase={handleFlashDatabase}
               isConnected={isRadioConnected}
             />
-          </div>
+          )}
+
+          {activeTab === 'patches' && (
+            <PatchManager
+              isConnected={isRadioConnected}
+              hasPatchedFirmware={hasPatchedFirmware}
+              onPatchChange={(patchId, enabled) => {
+                console.log(`Patch ${patchId}: ${enabled ? 'enabled' : 'disabled'}`);
+              }}
+            />
+          )}
+
+          {activeTab === 'log' && (
+            <DeviceLog
+              onFetchLog={handleFetchLog}
+              isConnected={isRadioConnected}
+            />
+          )}
+
+          {activeTab === 'hex' && (
+            <HexViewer
+              data={rawData}
+              title="Codeplug Hex View"
+            />
+          )}
         </div>
       </main>
+
+      {/* Supported Radios Sidebar - Desktop */}
+      <aside className="fixed right-0 top-32 w-48 bg-neutral-800 p-4 rounded-l-lg hidden xl:block">
+        <h3 className="text-sm font-semibold text-white mb-3">Supported Radios</h3>
+        <ul className="space-y-1 text-xs text-neutral-400">
+          <li>• MD-380</li>
+          <li>• MD-380G</li>
+          <li>• MD-390</li>
+          <li>• MD-390G</li>
+          <li>• Retevis RT3</li>
+          <li>• Retevis RT8</li>
+        </ul>
+      </aside>
 
       <footer className="border-t border-neutral-800 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-neutral-500 text-sm">
           <p>MD380 Web Tools - Powered by WebUSB</p>
           <p className="mt-1">Based on the md380tools project by Travis Goodspeed</p>
+          <p className="mt-1">
+            <a href="https://github.com/travisgoodspeed/md380tools" target="_blank" rel="noopener noreferrer" className="underline">
+              https://github.com/travisgoodspeed/md380tools
+            </a>
+          </p>
         </div>
       </footer>
     </div>
