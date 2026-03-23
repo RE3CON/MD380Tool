@@ -236,18 +236,29 @@ export default function Home() {
               
               {/* Android App Section */}
               <div className="mb-6 p-4 bg-green-900/30 border border-green-700 rounded-lg">
-                <h4 className="font-medium text-white mb-2">📱 Official Android App</h4>
+                <h4 className="font-medium text-white mb-2">📱 Official Android App (APK)</h4>
                 <p className="text-sm text-neutral-400 mb-3">
-                  Travis Goodspeed's official Android client for md380tools - same as what we web-based version is based on.
+                  Download the Android APK for direct installation on your phone. 
+                  Supports Android 7+ including Android 16.
                 </p>
-                <a 
-                  href="https://github.com/travisgoodspeed/MD380Tool" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded text-sm"
-                >
-                  <span className="mr-2">📦</span> View Android App
-                </a>
+                <div className="flex flex-wrap gap-2">
+                  <a 
+                    href="https://github.com/RE3CON/MD380Tool/releases" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded text-sm"
+                  >
+                    <span className="mr-2">📦</span> Download APK
+                  </a>
+                  <a 
+                    href="https://github.com/travisgoodspeed/MD380Tool" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded text-sm"
+                  >
+                    <span className="mr-2">🔧</span> View Source
+                  </a>
+                </div>
               </div>
               
               {/* Tools Grid */}
