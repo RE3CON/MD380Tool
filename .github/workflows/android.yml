@@ -1,8 +1,10 @@
-name: Build Android APK
+name: Build and Release APK
 
 on:
   push:
     branches: [main]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -43,3 +45,28 @@ jobs:
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/outputs/apk/release/app-release.apk
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    
+    steps:
+      - name: Download APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: md380tool-apks
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.apk
+          body: |
+            ## MD380Tool Android App
+            
+            ### Downloads
+            - app-debug.apk - Debug build
+            - app-release.apk - Release build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
