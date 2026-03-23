@@ -7,51 +7,56 @@ on:
       - 'v*'
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
     defaults:
       run:
-        working-directory: android
+        working-directory: ./android
     
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          
-      - name: Setup Android SDK
+
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v2
-        
+
       - name: Build Debug APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Build Release APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: List output files
+        run: find . -name "*.apk" -type f
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
           name: md380tool-apks
           path: |
-            android/app/build/outputs/apk/debug/*/app-debug.apk
-            android/app/build/outputs/apk/release/*/app-release.apk
+            app/build/outputs/apk/debug/**/*.apk
+            app/build/outputs/apk/release/**/*.apk
 
   release:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
     
     steps:
       - name: Download APKs
@@ -70,15 +75,6 @@ jobs:
             ### Downloads
             - app-debug.apk - Debug build
             - app-release.apk - Release build
-            
-            ### Supported Devices
-            - ARM64-v8a (64-bit)
-            - ARMv7a (32-bit)
-            
-            ### Features
-            - USB Host for MD380 radios
-            - Codeplug editing
-            - Firmware flashing
-            - DMR database updates
+          draft: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
