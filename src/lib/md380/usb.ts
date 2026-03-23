@@ -189,6 +189,7 @@ export class MD380WebUSB {
     }
 
     try {
+      const payload = data || new Uint8Array([0]);
       const result = await this.device.controlTransferOut(
         {
           requestType: 'class',
@@ -197,7 +198,7 @@ export class MD380WebUSB {
           value,
           index,
         },
-        data || new Uint8Array(0)
+        payload as unknown as BufferSource
       );
       return result.status === 'ok';
     } catch (error) {
@@ -339,7 +340,7 @@ export class MD380WebUSB {
           value: blockNumber,
           index: 0,
         },
-        data
+        data as unknown as BufferSource
       );
       
       return result.status === 'ok';
@@ -435,10 +436,11 @@ export class MD380WebUSB {
     await new Promise(r => setTimeout(r, 100));
 
     // Upload codeplug data in 1024-byte blocks
+    const totalBytes = data.length;
     let bytesWritten = 0;
     let blockNumber = 2;
 
-    while (bytesWritten < CODEPLUG_SIZE && blockNumber <= 0x102) {
+    while (bytesWritten < totalBytes && blockNumber <= 0x102) {
       const chunk = data.slice(bytesWritten, bytesWritten + BLOCK_SIZE);
       const success = await this.download(blockNumber, chunk);
       
@@ -541,6 +543,70 @@ export class MD380WebUSB {
 
   getConnectionStatus(): boolean {
     return this.isConnected;
+  }
+
+  // Legacy readData method (wrapper around readCodeplug)
+  async readData(
+    address: number,
+    length: number,
+    onProgress?: (progress: TransferProgress) => void
+  ): Promise<Uint8Array> {
+    if (address === 0 && length === CODEPLUG_SIZE) {
+      return this.readCodeplug(onProgress);
+    }
+    throw new Error('Unsupported address/length');
+  }
+
+  // Legacy writeData method (wrapper around writeCodeplug)
+  async writeData(
+    address: number,
+    data: Uint8Array,
+    onProgress?: (progress: TransferProgress) => void
+  ): Promise<boolean> {
+    if (address === 0 && data.length === CODEPLUG_SIZE) {
+      return this.writeCodeplug(data, onProgress);
+    }
+    throw new Error('Unsupported address/length');
+  }
+
+  // Write to SPI Flash
+  async writeSPIFlash(
+    offset: number,
+    data: Uint8Array,
+    onProgress?: (progress: TransferProgress) => void
+  ): Promise<boolean> {
+    // SPI Flash write - simplified implementation
+    if (!this.device || !this.isConnected) {
+      throw new Error('Device not connected');
+    }
+    
+    // Enter programming mode first
+    await this.enterProgrammingMode();
+    await new Promise(r => setTimeout(r, 500));
+    
+    // Write to SPI Flash at base + offset
+    const address = SPI_FLASH_BASE + offset;
+    await this.setAddress(address);
+    
+    let bytesWritten = 0;
+    let blockNumber = 0;
+    
+    while (bytesWritten < data.length) {
+      const chunk = data.slice(bytesWritten, bytesWritten + BLOCK_SIZE);
+      await this.download(blockNumber, chunk);
+      bytesWritten += chunk.length;
+      blockNumber++;
+      
+      if (onProgress) {
+        onProgress({
+          bytesTransferred: bytesWritten,
+          totalBytes: data.length,
+          percentage: (bytesWritten / data.length) * 100,
+        });
+      }
+    }
+    
+    return true;
   }
 }
 

@@ -1,4 +1,4 @@
-export { md380Usb, MD380WebUSB, SPI_FLASH_BASE, CHUNK_SIZE } from './usb';
+export { md380Usb, MD380WebUSB, SPI_FLASH_BASE, BLOCK_SIZE as CHUNK_SIZE } from './usb';
 export { 
   parseCodeplug, 
   serializeCodeplug, 
