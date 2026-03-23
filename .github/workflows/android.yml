@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build Android APK
 
 on:
   push:
@@ -11,14 +11,14 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build-android:
+  build-arm64:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -27,109 +27,67 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         
-      - name: Build Debug APK (ARM64)
+      - name: Build ARM64 Debug
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug -Pabi=arm64-v8a
-        env:
-          ANDROID_NDK_ABI: arm64-v8a
-          
-      - name: Build Debug APK (ARM32)
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug -Pabi=armeabi-v7a
-        env:
-          ANDROID_NDK_ABI: armeabi-v7a
-          
-      - name: Build Release APK (ARM64)
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease
-          
-      - name: Upload APKs
+          ./gradlew clean assembleDebug --no-daemon -PABI=arm64-v8a
+
+      - name: Upload ARM64 APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-apks
-          path: |
-            app/build/outputs/apk/debug/*/app-debug.apk
-            app/build/outputs/apk/release/*/app-release.apk
+          name: apk-arm64-debug
+          path: app/build/outputs/apk/debug/*/app-debug.apk
 
-  build-webapp:
+  build-arm32:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          node-version: '20'
+          java-version: '17'
+          distribution: 'temurin'
           
-      - name: Install and Build
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        
+      - name: Build ARM32 Debug
         run: |
-          npm ci
-          npm run build
-          
-      - name: Upload Web App
+          chmod +x gradlew
+          ./gradlew clean assembleDebug --no-daemon -PABI=armeabi-v7a
+
+      - name: Upload ARM32 APK
         uses: actions/upload-artifact@v4
         with:
-          name: webapp
-          path: out/
+          name: apk-arm32-debug
+          path: app/build/outputs/apk/debug/*/app-debug.apk
 
-  release:
-    needs: [build-android, build-webapp]
+  build-release:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Download Android APKs
-        uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          name: android-apks
+          java-version: '17'
+          distribution: 'temurin'
           
-      - name: Download Web App
-        uses: actions/download-artifact@v4
-        with:
-          name: webapp
-          path: webapp/
-          
-      - name: List files
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        
+      - name: Build Release
         run: |
-          ls -la
-          ls -la webapp/
-          
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            *.apk
-            webapp/**/*
-          body: |
-            ## MD380Tool v1.0.2 - Full Release
-
-            ### Android Apps (APK)
-            - `app-release.apk` - Release build (signed)
-            - `app-debug.apk` - Debug build
-
-            ### Web App
-            - Deploy the `webapp/` folder to any static host
-            - Or use GitHub Pages
-
-            ### What's New
-            - ✅ Updated for Android 16 compatibility
-            - ✅ Target SDK 34
-            - ✅ Separate 64-bit (arm64-v8a) and 32-bit (armeabi-v7a) builds
-            - ✅ USB Host support for MD380 radios
-            - ✅ Full web interface included
-
-            ### Supported Radios
-            - Tytera MD-380 / MD-380G
-            - Tytera MD-390 / MD-390G
-            - Retevis RT3 / RT8
-
-            ### Installation
-            1. Enable "Install from unknown sources"
-            2. Download and install the APK
-            3. Connect radio via USB OTG
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: apk-release
+          path: app/build/outputs/apk/release/*/app-release.apk
