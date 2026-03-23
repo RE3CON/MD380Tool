@@ -26,21 +26,19 @@ jobs:
         
       - name: Build Debug APK
         run: |
-          cd app
           chmod +x gradlew
           ./gradlew assembleDebug
           
       - name: Build Release APK
         run: |
-          cd app
           chmod +x gradlew
           ./gradlew assembleRelease
           
       - name: Rename APKs
         run: |
-          mv app/build/outputs/apk/debug/*.apk MD380Tool-debug.apk
-          mv app/build/outputs/apk/release/*.apk MD380Tool-release.apk
-          ls -la *.apk
+          mv app/build/outputs/apk/debug/*.apk MD380Tool-debug.apk 2>/dev/null || true
+          mv app/build/outputs/apk/release/*.apk MD380Tool-release.apk 2>/dev/null || true
+          ls -la *.apk 2>/dev/null || ls -la app/build/outputs/apk/*/*.apk
           
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
