@@ -228,23 +228,30 @@ export default function Home() {
 
           {activeTab === 'emulator' && (
             <div className="bg-neutral-800 rounded-lg p-6">
-              <h3 className="text-xl font-semibold text-white mb-4">🔧 MD380 Emulator</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">🎮 Tools & Resources</h3>
               <p className="text-neutral-400 mb-4">
-                The full MD380 emulator runs natively and cannot be fully emulated in a browser. 
-                However, you can test codeplug configurations and DMR operations here.
+                The MD380 has no full software emulator - it requires actual hardware. 
+                However, there are related tools and apps available:
               </p>
               
+              {/* Android App Section */}
+              <div className="mb-6 p-4 bg-green-900/30 border border-green-700 rounded-lg">
+                <h4 className="font-medium text-white mb-2">📱 Official Android App</h4>
+                <p className="text-sm text-neutral-400 mb-3">
+                  Travis Goodspeed's official Android client for md380tools - same as what we web-based version is based on.
+                </p>
+                <a 
+                  href="https://github.com/travisgoodspeed/MD380Tool" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded text-sm"
+                >
+                  <span className="mr-2">📦</span> View Android App
+                </a>
+              </div>
+              
+              {/* Tools Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div className="bg-neutral-700 rounded-lg p-4">
-                  <h4 className="font-medium text-white mb-2">📻 DMR Signal Simulator</h4>
-                  <p className="text-sm text-neutral-400 mb-4">
-                    Simulate incoming DMR transmissions for testing.
-                  </p>
-                  <button className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded text-sm">
-                    Start Simulator
-                  </button>
-                </div>
-                
                 <div className="bg-neutral-700 rounded-lg p-4">
                   <h4 className="font-medium text-white mb-2">📝 Codeplug Validator</h4>
                   <p className="text-sm text-neutral-400 mb-4">
@@ -256,32 +263,55 @@ export default function Home() {
                 </div>
                 
                 <div className="bg-neutral-700 rounded-lg p-4">
-                  <h4 className="font-medium text-white mb-2">🎵 DMR Audio Decoder</h4>
+                  <h4 className="font-medium text-white mb-2">📊 DMR Protocol Info</h4>
                   <p className="text-sm text-neutral-400 mb-4">
-                    Decode and play back recorded DMR audio.
+                    View DMR protocol specifications and frame structure.
                   </p>
-                  <button className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded text-sm">
-                    Decode Audio
+                  <button className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded text-sm">
+                    View Specs
                   </button>
                 </div>
                 
                 <div className="bg-neutral-700 rounded-lg p-4">
-                  <h4 className="font-medium text-white mb-2">📡 Protocol Analyzer</h4>
+                  <h4 className="font-medium text-white mb-2">🔧 md380-tool CLI</h4>
                   <p className="text-sm text-neutral-400 mb-4">
-                    Analyze DMR protocol frames and logs.
+                    Command-line tool for advanced operations.
                   </p>
-                  <button className="px-4 py-2 bg-yellow-700 hover:bg-yellow-600 text-white rounded text-sm">
-                    Analyze
-                  </button>
+                  <a 
+                    href="https://github.com/travisgoodspeed/md380tools/tree/master/md380-tool" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-block px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded text-sm"
+                  >
+                    View Source
+                  </a>
+                </div>
+                
+                <div className="bg-neutral-700 rounded-lg p-4">
+                  <h4 className="font-medium text-white mb-2">💾 Firmware Download</h4>
+                  <p className="text-sm text-neutral-400 mb-4">
+                    Get pre-built patched firmware binaries.
+                  </p>
+                  <a 
+                    href="https://github.com/travisgoodspeed/md380tools/releases" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-block px-4 py-2 bg-yellow-700 hover:bg-yellow-600 text-white rounded text-sm"
+                  >
+                    Get Firmware
+                  </a>
                 </div>
               </div>
               
-              <div className="mt-6 p-4 bg-blue-900/30 border border-blue-700 rounded-lg">
-                <p className="text-sm text-blue-300">
-                  <strong>Note:</strong> For full emulator functionality with firmware execution, 
-                  use the <a href="https://github.com/travisgoodspeed/md380tools" target="_blank" rel="noopener noreferrer" className="underline">md380tools</a> command-line tools. 
-                  This web interface provides configuration testing and validation.
-                </p>
+              {/* Links to Original Tools */}
+              <div className="mt-6 p-4 bg-neutral-700 rounded-lg">
+                <h4 className="font-medium text-white mb-3">🔗 md380tools Command-Line Tools</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                  <a href="https://github.com/travisgoodspeed/md380tools/blob/master/docs/md380tool.md" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">md380-tool</a>
+                  <a href="https://github.com/travisgoodspeed/md380tools/blob/master/docs/md380tool.md" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">md380-dfu</a>
+                  <a href="https://github.com/travisgoodspeed/md380tools" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">md380-gfx</a>
+                  <a href="https://github.com/travisgoodspeed/md380tools" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">md380-fw</a>
+                </div>
               </div>
             </div>
           )}
