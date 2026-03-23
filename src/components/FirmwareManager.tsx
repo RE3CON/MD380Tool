@@ -343,21 +343,42 @@ export function FirmwareManager({
         </div>
       </div>
 
-      {/* Local File Section */}
+      {/* Local File Section - Mobile Friendly */}
       <div className="bg-neutral-800 rounded-lg p-6">
         <h3 className="text-lg font-medium text-white mb-4">💾 Flash from Device</h3>
         <p className="text-sm text-neutral-400 mb-4">
-          Upload a firmware .bin file from your device:
+          Upload a firmware .bin file from your phone/tablet:
         </p>
-        <label className="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-600 disabled:bg-neutral-600 text-white rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        
+        <label 
+          className={`flex flex-col items-center justify-center w-full h-32 px-4 py-4 bg-blue-700 hover:bg-blue-600 disabled:bg-neutral-600 border-2 border-dashed border-blue-500 rounded-lg cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed ${!isConnected || isFlashing ? 'opacity-50' : ''}`}
+        >
           <input 
             type="file" 
-            accept=".bin" 
+            accept=".bin,application/octet-stream"
             className="hidden" 
             onChange={handleFirmwareUpload}
             disabled={!isConnected || isFlashing}
+            id="firmware-file-input"
           />
-          📁 Choose Firmware File
+          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <svg className="w-10 h-10 mb-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p className="mb-2 text-sm text-white text-center">
+              <span className="font-semibold">Tap to select firmware</span>
+            </p>
+            <p className="text-xs text-blue-200">.bin files up to 2MB</p>
+          </div>
+        </label>
+        
+        {/* Alternative touch-friendly button */}
+        <label 
+          htmlFor="firmware-file-input"
+          className={`mt-4 flex items-center justify-center w-full px-4 py-4 bg-blue-700 hover:bg-blue-600 disabled:bg-neutral-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isConnected || isFlashing ? 'opacity-50' : ''}`}
+        >
+          <span className="mr-2 text-xl">📁</span>
+          {isFlashing ? 'Flashing...' : 'Select Firmware File'}
         </label>
       </div>
 

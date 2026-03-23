@@ -133,10 +133,10 @@ export function CodeplugEditor({ onReadFromRadio, onWriteToRadio, isConnected }:
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-white">Codeplug Editor</h2>
         
-        <div className="flex gap-2">
-          <label className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded cursor-pointer transition-colors">
-            Load File
-            <input type="file" accept=".bin,.rdt" className="hidden" onChange={handleFileLoad} />
+        <div className="flex gap-2 flex-wrap">
+          <label className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded cursor-pointer transition-colors flex items-center gap-2">
+            <input type="file" accept=".bin,.rdt" className="hidden" onChange={handleFileLoad} id="codeplug-file-input" />
+            <span>📂</span> Load File
           </label>
           
           <button
