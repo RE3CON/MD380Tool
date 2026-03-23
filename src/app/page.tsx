@@ -81,6 +81,20 @@ export default function Home() {
     }
   }, []);
 
+  const handleReadFirmware = useCallback(async (): Promise<Uint8Array> => {
+    try {
+      await md380Usb.enterProgrammingMode();
+      await new Promise(r => setTimeout(r, 500));
+      
+      // Read firmware from radio (this would need implementation in usb.ts)
+      // For now, return empty - actual implementation would read from flash
+      return new Uint8Array(0);
+    } catch (err) {
+      console.error('Firmware read error:', err);
+      throw err;
+    }
+  }, []);
+
   const handleFlashDatabase = useCallback(async (data: Uint8Array): Promise<boolean> => {
     try {
       const progressHandler = (progress: TransferProgress) => {
@@ -182,6 +196,7 @@ export default function Home() {
             <FirmwareManager
               onFlashFirmware={handleFlashFirmware}
               onFlashDatabase={handleFlashDatabase}
+              onReadFirmware={handleReadFirmware}
               isConnected={isRadioConnected}
             />
           )}
