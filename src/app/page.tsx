@@ -9,7 +9,7 @@ import { DeviceLog } from '@/components/DeviceLog';
 import { PatchManager } from '@/components/PatchManager';
 import { md380Usb, CODEPLUG_SIZE, SPI_FLASH_BASE, type TransferProgress } from '@/lib/md380';
 
-type TabType = 'codeplug' | 'firmware' | 'patches' | 'log' | 'hex';
+type TabType = 'codeplug' | 'firmware' | 'patches' | 'log' | 'hex' | 'emulator';
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
@@ -125,6 +125,7 @@ export default function Home() {
     { id: 'patches', label: 'Patches', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
     { id: 'log', label: 'Log', icon: 'M9 12h6m-6 4h6m2 5H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { id: 'hex', label: 'Hex View', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
+    { id: 'emulator', label: 'Emulator', icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' },
   ];
 
   return (
@@ -223,6 +224,66 @@ export default function Home() {
               data={rawData}
               title="Codeplug Hex View"
             />
+          )}
+
+          {activeTab === 'emulator' && (
+            <div className="bg-neutral-800 rounded-lg p-6">
+              <h3 className="text-xl font-semibold text-white mb-4">🔧 MD380 Emulator</h3>
+              <p className="text-neutral-400 mb-4">
+                The full MD380 emulator runs natively and cannot be fully emulated in a browser. 
+                However, you can test codeplug configurations and DMR operations here.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <div className="bg-neutral-700 rounded-lg p-4">
+                  <h4 className="font-medium text-white mb-2">📻 DMR Signal Simulator</h4>
+                  <p className="text-sm text-neutral-400 mb-4">
+                    Simulate incoming DMR transmissions for testing.
+                  </p>
+                  <button className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded text-sm">
+                    Start Simulator
+                  </button>
+                </div>
+                
+                <div className="bg-neutral-700 rounded-lg p-4">
+                  <h4 className="font-medium text-white mb-2">📝 Codeplug Validator</h4>
+                  <p className="text-sm text-neutral-400 mb-4">
+                    Validate codeplug binary structure without a radio.
+                  </p>
+                  <button className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded text-sm">
+                    Validate Codeplug
+                  </button>
+                </div>
+                
+                <div className="bg-neutral-700 rounded-lg p-4">
+                  <h4 className="font-medium text-white mb-2">🎵 DMR Audio Decoder</h4>
+                  <p className="text-sm text-neutral-400 mb-4">
+                    Decode and play back recorded DMR audio.
+                  </p>
+                  <button className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded text-sm">
+                    Decode Audio
+                  </button>
+                </div>
+                
+                <div className="bg-neutral-700 rounded-lg p-4">
+                  <h4 className="font-medium text-white mb-2">📡 Protocol Analyzer</h4>
+                  <p className="text-sm text-neutral-400 mb-4">
+                    Analyze DMR protocol frames and logs.
+                  </p>
+                  <button className="px-4 py-2 bg-yellow-700 hover:bg-yellow-600 text-white rounded text-sm">
+                    Analyze
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-900/30 border border-blue-700 rounded-lg">
+                <p className="text-sm text-blue-300">
+                  <strong>Note:</strong> For full emulator functionality with firmware execution, 
+                  use the <a href="https://github.com/travisgoodspeed/md380tools" target="_blank" rel="noopener noreferrer" className="underline">md380tools</a> command-line tools. 
+                  This web interface provides configuration testing and validation.
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </main>

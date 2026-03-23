@@ -1,0 +1,42 @@
+name: Pull Request Approval
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  check-approval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Approval
+        run: |
+          echo "Pull request requires approval from maintainer"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo "PR title: ${{ github.event.pull_request.title }}"
+          echo "Author: ${{ github.event.pull_request.user.login }}"
+          
+      - name: Check for changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            src:
+              - 'src/**'
+            docs:
+              - 'README.md'
+              - 'docs/**'
+            config:
+              - 'package.json'
+              - 'next.config.ts'
+
+  notify:
+    needs: check-approval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "New PR needs review!"
+          # This could be extended to notify via Discord, Telegram, etc.
