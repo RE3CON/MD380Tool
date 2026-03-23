@@ -2,7 +2,9 @@
 
 A browser-based firmware and codeplug management tool for Tytera MD380 radios and equivalents, powered by WebUSB.
 
-**Live Demo:** https://bright-path-2916.d.kiloapps.io/
+**🚀 Live Demo (Primary):** [https://bright-path-2916.d.kiloapps.io/](https://bright-path-2916.d.kiloapps.io/)
+
+**📦 GitHub Pages (Mirror):** [https://re3con.github.io/MD380Tool/](https://re3con.github.io/MD380Tool/)
 
 ## Supported Radios
 

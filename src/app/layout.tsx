@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://re3con.github.io'),
+  metadataBase: new URL('https://re3con.github.io/MD380Tool'),
   title: "MD380 Web Tools",
   description: "Browser-based firmware and codeplug management for Tytera MD380 radios via WebUSB. Read, write, and flash your MD380 radio directly from your browser.",
   keywords: ["MD380", "MD390", "DMR", "radio", "firmware", "WebUSB", "ham radio", "amateurradio"],
